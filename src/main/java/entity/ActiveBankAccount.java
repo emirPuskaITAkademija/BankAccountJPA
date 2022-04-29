@@ -85,4 +85,41 @@ public class ActiveBankAccount {
             throw new RuntimeException(e.getMessage());
         }
     }
+
+    public static boolean transferMoney(BankAccount sourceAccount,
+                                        BankAccount destAccount,
+                                        Double transferredAmount){
+        if(sourceAccount == null || destAccount == null || transferredAmount == null){
+            return false;
+        }
+        if(sourceAccount.getAccountNumber().equals(destAccount.getAccountNumber())){
+            return false;
+        }
+        if(transferredAmount<=0){
+            return false;
+        }
+        if(sourceAccount.getAmount()<transferredAmount){
+            System.err.println("Nema dovoljno sredstava na računu");
+            return false;
+        }
+        //na transfer
+        try{
+            EntityManager entityManager = EMF.createEntityManager();
+            entityManager.getTransaction().begin();
+            //novo stanje računa sa kog skidam novac
+            sourceAccount.setAmount(sourceAccount.getAmount()-transferredAmount);
+            destAccount.setAmount(destAccount.getAmount()+transferredAmount);
+            entityManager.merge(sourceAccount);
+            entityManager.merge(destAccount);
+            entityManager.getTransaction().commit();
+            return true;
+        }catch (EclipseLinkException e){
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+
+
+
+
 }
